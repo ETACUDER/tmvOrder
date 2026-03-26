@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMV Room Service</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: linear-gradient(160deg, #1a0a0a 0%, #3d1520 40%, #0f1923 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .card {
+            background: linear-gradient(170deg, #faf6ef 0%, #f0e8d8 100%);
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+            max-width: 380px;
+            width: 100%;
+            padding: 44px 30px;
+            text-align: center;
+            border: 1px solid rgba(212,175,55,0.3);
+        }
+
+        .hotel-name {
+            font-size: 13px;
+            color: #b8860b;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 4px;
+            font-family: -apple-system, sans-serif;
+            font-weight: 600;
+        }
+
+        h1 {
+            color: #3d1520;
+            font-size: 26px;
+            margin-bottom: 32px;
+            font-weight: 700;
+        }
+
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #d4af37, transparent);
+            margin: 0 auto 28px;
+        }
+
+        .room-display { margin-bottom: 28px; }
+
+        .room-label {
+            font-size: 13px;
+            color: #8a7a6a;
+            margin-bottom: 8px;
+            font-family: -apple-system, sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .room-big {
+            font-size: 68px;
+            font-weight: 900;
+            color: #3d1520;
+            line-height: 1;
+            margin-bottom: 8px;
+            font-family: -apple-system, sans-serif;
+        }
+
+        .room-change {
+            color: #b8860b;
+            font-size: 13px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            text-decoration: underline;
+            padding: 4px;
+            font-family: -apple-system, sans-serif;
+        }
+
+        .room-input-wrap { display: none; margin-bottom: 20px; }
+        .room-input-wrap.show { display: block; }
+
+        .room-input {
+            width: 100%;
+            padding: 16px;
+            font-size: 28px;
+            text-align: center;
+            border: 2px solid #d4c5a9;
+            border-radius: 14px;
+            font-weight: 700;
+            background: #fffdf8;
+            color: #3d1520;
+            font-family: -apple-system, sans-serif;
+        }
+
+        .room-input:focus {
+            outline: none;
+            border-color: #d4af37;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
+        }
+
+        .room-input-hint {
+            font-size: 12px;
+            color: #a09080;
+            margin-top: 8px;
+            font-family: -apple-system, sans-serif;
+        }
+
+        .error-msg {
+            color: #c0392b;
+            font-size: 13px;
+            margin-top: 8px;
+            display: none;
+            font-family: -apple-system, sans-serif;
+        }
+        .error-msg.show { display: block; }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #1a0a0a;
+            border: none;
+            border-radius: 14px;
+            font-size: 20px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 12px;
+            font-family: -apple-system, sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(212,175,55,0.4);
+        }
+
+        .btn:active { transform: translateY(0); }
+
+        .footer-note {
+            margin-top: 28px;
+            font-size: 12px;
+            color: #b0a090;
+            line-height: 1.6;
+            font-family: -apple-system, sans-serif;
+        }
+
+        .alt-actions {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0d5c0;
+        }
+
+        .alt-label {
+            font-size: 12px;
+            color: #a09080;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            font-family: -apple-system, sans-serif;
+        }
+
+        .btn-outline {
+            width: 100%;
+            padding: 14px;
+            background: transparent;
+            color: #3d1520;
+            border: 2px solid #d4c5a9;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: -apple-system, sans-serif;
+            margin-bottom: 10px;
+            text-decoration: none;
+            display: block;
+            box-sizing: border-box;
+        }
+
+        .btn-outline:hover {
+            border-color: #d4af37;
+            background: rgba(212,175,55,0.06);
+        }
+
+        .btn-call {
+            border-color: #b8860b;
+            color: #b8860b;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="hotel-name">The Mangal View</div>
+        <h1>Room Service</h1>
+        <div class="divider"></div>
+
+        <div class="room-display" id="roomDisplay">
+            <div class="room-label">Your Room</div>
+            <div class="room-big" id="roomBig">—</div>
+            <button class="room-change" onclick="showRoomInput()">Not your room? Change</button>
+        </div>
+
+        <div class="room-input-wrap" id="roomInputWrap">
+            <input type="number" class="room-input" id="roomInput" placeholder="Room no." inputmode="numeric">
+            <div class="room-input-hint">e.g. 201, 305, 412</div>
+            <div class="error-msg" id="errorMsg">Enter a valid room number</div>
+        </div>
+
+        <button class="btn" onclick="proceed()">Order Food</button>
+
+        <div class="footer-note">
+            Scan the QR code in your room<br>or enter your room number above
+        </div>
+
+        <div class="alt-actions">
+            <div class="alt-label">Having trouble?</div>
+            <a href="menu.html?browse=1" class="btn-outline">Browse Menu</a>
+            <div class="btn-outline btn-call">Dial 9 from your room phone</div>
+        </div>
+    </div>
+
+    <script>
+        const validRooms = [];
+        for (let i = 109; i <= 112; i++) validRooms.push(i);
+        for (let f = 2; f <= 4; f++) {
+            for (let r = 1; r <= 12; r++) validRooms.push(f * 100 + r);
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const qrRoom = params.get('room');
+
+        if (qrRoom && validRooms.includes(parseInt(qrRoom))) {
+            document.getElementById('roomBig').textContent = qrRoom;
+        } else {
+            showRoomInput();
+        }
+
+        function showRoomInput() {
+            document.getElementById('roomDisplay').style.display = 'none';
+            document.getElementById('roomInputWrap').classList.add('show');
+            document.getElementById('roomInput').focus();
+        }
+
+        function proceed() {
+            const errorEl = document.getElementById('errorMsg');
+            errorEl.classList.remove('show');
+
+            let room;
+            if (document.getElementById('roomInputWrap').classList.contains('show')) {
+                room = parseInt(document.getElementById('roomInput').value);
+            } else {
+                room = parseInt(document.getElementById('roomBig').textContent);
+            }
+
+            if (!validRooms.includes(room)) {
+                errorEl.classList.add('show');
+                return;
+            }
+
+            sessionStorage.setItem('userRoom', room.toString());
+            window.location.href = 'menu.html';
+        }
+
+        document.getElementById('roomInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') proceed();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMV Order History</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a0a0a;
+            color: #e0d5c5;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #1a0a0a;
+            border-bottom: 1px solid #3d1520;
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar-title { font-size: 15px; font-weight: 700; color: #d4af37; letter-spacing: 1px; }
+        .back-link { color: #d4af37; font-size: 13px; text-decoration: none; }
+
+        .filters {
+            padding: 16px 24px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            border-bottom: 1px solid #2d1117;
+        }
+
+        .filters label { font-size: 13px; color: #888; }
+        .filters input[type="date"] {
+            background: #2d1117;
+            border: 1px solid #3d1520;
+            color: #e0d5c5;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .summary {
+            padding: 16px 24px;
+            display: flex;
+            gap: 24px;
+            border-bottom: 1px solid #2d1117;
+        }
+
+        .stat { text-align: center; }
+        .stat-val { font-size: 24px; font-weight: 800; color: #d4af37; }
+        .stat-label { font-size: 11px; color: #777; text-transform: uppercase; letter-spacing: 1px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #2d1117;
+            text-align: left;
+            padding: 10px 16px;
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 48px;
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid #2d1117;
+            font-size: 14px;
+            vertical-align: top;
+        }
+
+        tr:hover { background: rgba(61,21,32,0.3); }
+
+        .status-badge {
+            padding: 3px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-pending { background: #c0392b; color: white; }
+        .status-accepted { background: #d4af37; color: #1a0a0a; }
+        .status-completed { background: #2ed573; color: #1a0a0a; }
+
+        .empty { text-align: center; padding: 80px 20px; color: #555; }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <div class="topbar">
+        <span class="topbar-title">ORDER HISTORY</span>
+        <a href="admin.html" class="back-link">← Back to Orders</a>
+    </div>
+
+    <div class="filters">
+        <label>Date:</label>
+        <input type="date" id="dateFilter">
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div id="content">
+        <div class="empty">Authenticating...</div>
+    </div>
+
+    <script>
+        const ALLOWED_EMAIL = 'themangalview@gmail.com';
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user && user.email === ALLOWED_EMAIL) {
+                init();
+            } else {
+                window.location.href = 'admin.html';
+            }
+        });
+
+        let allOrders = {};
+
+        function init() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateFilter').value = today;
+            document.getElementById('dateFilter').addEventListener('change', renderFiltered);
+
+            database.ref('orders').on('value', snap => {
+                allOrders = snap.val() || {};
+                renderFiltered();
+            });
+        }
+
+        function renderFiltered() {
+            const dateVal = document.getElementById('dateFilter').value;
+            const keys = Object.keys(allOrders).filter(k => {
+                const d = new Date(allOrders[k].timestamp);
+                const ds = d.getFullYear() + '-' +
+                    String(d.getMonth()+1).padStart(2,'0') + '-' +
+                    String(d.getDate()).padStart(2,'0');
+                return ds === dateVal;
+            });
+
+            const orders = keys.map(k => ({ ...allOrders[k], _key: k }))
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            // Summary
+            const total = orders.length;
+            const revenue = orders.reduce((sum, o) => sum + (o.total || 0), 0);
+            const completed = orders.filter(o => o.status === 'completed').length;
+
+            document.getElementById('summary').innerHTML = `
+                <div class="stat"><div class="stat-val">${total}</div><div class="stat-label">Orders</div></div>
+                <div class="stat"><div class="stat-val">${completed}</div><div class="stat-label">Completed</div></div>
+                <div class="stat"><div class="stat-val">₹${revenue.toLocaleString()}</div><div class="stat-label">Revenue</div></div>
+            `;
+
+            if (orders.length === 0) {
+                document.getElementById('content').innerHTML = '<div class="empty">No orders for this date</div>';
+                return;
+            }
+
+            let html = '<table><thead><tr><th>Room</th><th>Time</th><th>Items</th><th>Total</th><th>Status</th></tr></thead><tbody>';
+
+            orders.forEach(o => {
+                const time = new Date(o.timestamp).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+                const items = (o.items || []).map(i => `${i.quantity}x ${i.name}`).join(', ');
+                const statusClass = 'status-' + (o.status || 'pending');
+
+                html += `<tr>
+                    <td style="font-size:20px;font-weight:800;">${o.roomNumber || '—'}</td>
+                    <td>${time}</td>
+                    <td>${items}</td>
+                    <td style="font-weight:700;">₹${o.total || 0}</td>
+                    <td><span class="status-badge ${statusClass}">${o.status || 'pending'}</span></td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            document.getElementById('content').innerHTML = html;
+        }
+    </script>
+</body>
+</html>

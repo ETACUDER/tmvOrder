@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMV Orders</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a0a0a;
+            color: #e0d5c5;
+            min-height: 100vh;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+
+        /* Top bar — always visible */
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #1a0a0a;
+            border-bottom: 1px solid #3d1520;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topbar-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #d4af37;
+            letter-spacing: 1px;
+        }
+
+        .pending-badge {
+            background: #c0392b;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            animation: none;
+        }
+
+        .pending-badge.has-pending {
+            animation: pulse-badge 1.5s infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); background: #ff6b81; }
+        }
+
+        /* New order banner — flashes when new order arrives */
+        .new-order-banner {
+            display: none;
+            background: #d4af37;
+            color: #1a0a0a;
+            text-align: center;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: 800;
+            cursor: pointer;
+            animation: flash-banner 0.8s infinite;
+            letter-spacing: 1px;
+        }
+
+        .new-order-banner.show {
+            display: block;
+        }
+
+        @keyframes flash-banner {
+            0%, 100% { background: #d4af37; }
+            50% { background: #f0d060; }
+        }
+
+        /* Orders list */
+        .orders {
+            padding: 8px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #555;
+            font-size: 16px;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Order card */
+        .order-card {
+            background: #2d1117;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            border-left: 5px solid #c0392b;
+            transition: opacity 0.3s;
+        }
+
+        .order-card.accepted {
+            border-left-color: #d4af37;
+        }
+
+        .order-card.done {
+            border-left-color: #2ed573;
+            opacity: 0.45;
+        }
+
+        /* Room number — THE most prominent element */
+        .order-room-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+        }
+
+        .room-number {
+            font-size: 36px;
+            font-weight: 900;
+            color: #fff;
+            letter-spacing: 2px;
+            line-height: 1;
+        }
+
+        .order-time {
+            font-size: 12px;
+            color: #777;
+            text-align: right;
+            line-height: 1.4;
+        }
+
+        .order-time .ago {
+            color: #aaa;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        /* Items list */
+        .order-items {
+            padding: 0 16px 10px;
+        }
+
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 15px;
+        }
+
+        .order-item:last-child {
+            border-bottom: none;
+        }
+
+        .item-qty {
+            color: #d4af37;
+            font-weight: 700;
+            min-width: 28px;
+        }
+
+        .item-name {
+            flex: 1;
+            color: #ddd;
+            padding: 0 8px;
+        }
+
+        .item-price {
+            color: #777;
+            font-size: 13px;
+        }
+
+        /* Total */
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 16px;
+            border-top: 1px solid rgba(212,175,55,0.15);
+            font-weight: 700;
+            font-size: 18px;
+            color: #d4af37;
+        }
+
+        /* Action buttons */
+        .order-actions {
+            display: flex;
+            gap: 0;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 16px;
+            border: none;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: filter 0.2s;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        .action-btn:active {
+            filter: brightness(0.8);
+        }
+
+        .btn-accept {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0a0a;
+            font-size: 18px;
+        }
+
+        .btn-done {
+            background: #2ed573;
+        }
+
+        .btn-dismiss {
+            background: #3a2020;
+            flex: 0.4;
+            font-size: 13px;
+            color: #887766;
+        }
+
+        /* Done orders section */
+        .section-label {
+            padding: 16px 16px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        /* Mute button */
+        .mute-btn {
+            background: none;
+            border: 1px solid #5a3a3a;
+            color: #8a7a6a;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .mute-btn.muted {
+            background: #c0392b;
+            border-color: #c0392b;
+            color: white;
+        }
+
+        /* Login screen */
+        .login-screen {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .login-screen .hotel-name {
+            font-size: 13px;
+            color: #d4af37;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .login-screen h1 {
+            color: #f0e8d8;
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            font-family: Georgia, serif;
+        }
+
+        .login-btn {
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0a0a;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(212,175,55,0.3);
+        }
+
+        .login-error {
+            color: #c0392b;
+            font-size: 13px;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .app-content { display: none; }
+
+        /* Responsive — works great at 320-420px */
+        @media (max-width: 360px) {
+            .room-number { font-size: 30px; }
+            .action-btn { padding: 14px; font-size: 15px; }
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+
+    <div class="login-screen" id="loginScreen">
+        <div class="hotel-name">The Mangal View</div>
+        <h1>Staff Login</h1>
+        <button class="login-btn" onclick="doLogin()">Sign in with Google</button>
+        <div class="login-error" id="loginError"></div>
+    </div>
+
+    <div class="app-content" id="appContent">
+    <div class="topbar">
+        <span class="topbar-title">TMV ORDERS</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+            <a href="admin-config.html" style="color:#d4af37;font-size:12px;text-decoration:none;padding:4px 10px;border:1px solid #3d1520;border-radius:8px;">Settings</a>
+            <a href="order-history.html" style="color:#d4af37;font-size:12px;text-decoration:none;padding:4px 10px;border:1px solid #3d1520;border-radius:8px;">History</a>
+            <button class="mute-btn" id="muteBtn" onclick="toggleMute()">SOUND ON</button>
+            <span class="pending-badge" id="pendingBadge">0 pending</span>
+        </div>
+    </div>
+
+    <div class="new-order-banner" id="newOrderBanner" onclick="dismissBanner()">
+        NEW ORDER
+    </div>
+
+    <div class="orders" id="ordersContainer">
+        <div class="empty-state">
+            <div class="icon">📋</div>
+            <p>No orders yet</p>
+            <p style="font-size:13px;margin-top:8px;color:#444;">Orders appear here instantly when guests place them</p>
+        </div>
+    </div>
+    </div><!-- /app-content -->
+
+    <script>
+        const ALLOWED_EMAIL = 'themangalview@gmail.com';
+
+        function doLogin() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            provider.setCustomParameters({ login_hint: ALLOWED_EMAIL });
+            firebase.auth().signInWithPopup(provider).catch(err => {
+                const el = document.getElementById('loginError');
+                el.textContent = err.message;
+                el.style.display = 'block';
+            });
+        }
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user && user.email === ALLOWED_EMAIL) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('appContent').style.display = 'block';
+                initApp();
+            } else if (user) {
+                firebase.auth().signOut();
+                const el = document.getElementById('loginError');
+                el.textContent = 'Access denied. Staff accounts only.';
+                el.style.display = 'block';
+            }
+        });
+
+        function initApp() {
+        // -- app logic starts here --
+        let orders = {};
+        let muted = false;
+        let notificationInterval = null;
+        let audioCtx = null;
+        let bannerTimeout = null;
+        let previousPendingKeys = new Set();
+
+        // Sound — phone ring pattern
+        function ring() {
+            if (muted) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const freqs = [440, 480];
+                freqs.forEach(freq => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.frequency.value = freq;
+
+                    const t = audioCtx.currentTime;
+                    gain.gain.setValueAtTime(0, t);
+                    gain.gain.linearRampToValueAtTime(0.25, t + 0.02);
+                    gain.gain.setValueAtTime(0.25, t + 0.35);
+                    gain.gain.linearRampToValueAtTime(0, t + 0.38);
+                    gain.gain.setValueAtTime(0, t + 0.55);
+                    gain.gain.linearRampToValueAtTime(0.25, t + 0.57);
+                    gain.gain.setValueAtTime(0.25, t + 0.9);
+                    gain.gain.linearRampToValueAtTime(0, t + 0.93);
+
+                    osc.start(t);
+                    osc.stop(t + 1);
+                });
+            } catch(e) {}
+        }
+
+        function startRinging() {
+            stopRinging();
+            ring();
+            notificationInterval = setInterval(() => {
+                const hasPending = Object.values(orders).some(o => o.status === 'pending');
+                if (hasPending) {
+                    ring();
+                    document.title = '🔔 NEW ORDER — TMV';
+                } else {
+                    stopRinging();
+                }
+            }, 3500);
+        }
+
+        function stopRinging() {
+            if (notificationInterval) {
+                clearInterval(notificationInterval);
+                notificationInterval = null;
+            }
+            document.title = 'TMV Orders';
+        }
+
+        window.toggleMute = function() {
+            muted = !muted;
+            const btn = document.getElementById('muteBtn');
+            btn.textContent = muted ? 'SOUND OFF' : 'SOUND ON';
+            btn.classList.toggle('muted', muted);
+            if (muted) stopRinging();
+            // Init audio context on user gesture
+            if (!muted && !audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        };
+
+        window.dismissBanner = function() {
+            document.getElementById('newOrderBanner').classList.remove('show');
+        };
+
+        function showBanner() {
+            const banner = document.getElementById('newOrderBanner');
+            banner.classList.add('show');
+            clearTimeout(bannerTimeout);
+            bannerTimeout = setTimeout(() => banner.classList.remove('show'), 8000);
+        }
+
+        // Time formatting
+        function timeAgo(ts) {
+            const diff = Date.now() - new Date(ts).getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return mins + ' min ago';
+            const hrs = Math.floor(mins / 60);
+            if (hrs < 24) return hrs + 'h ago';
+            return new Date(ts).toLocaleDateString();
+        }
+
+        function clockTime(ts) {
+            return new Date(ts).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Render
+        function isToday(ts) {
+            const fmt = { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' };
+            const d = new Date(ts).toLocaleDateString('en-CA', fmt);
+            const now = new Date().toLocaleDateString('en-CA', fmt);
+            return d === now;
+        }
+
+        function render() {
+            const container = document.getElementById('ordersContainer');
+            const keys = Object.keys(orders).filter(k => isToday(orders[k].timestamp));
+
+            if (keys.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <p>No orders today</p>
+                        <p style="font-size:13px;margin-top:8px;color:#444;">Orders appear here instantly</p>
+                    </div>`;
+                return;
+            }
+
+            // Sort: pending first, then accepted, then done. Within each group: newest first
+            const statusOrder = { pending: 0, accepted: 1, completed: 2 };
+            const sorted = keys.map(k => ({ ...orders[k], _key: k }))
+                .sort((a, b) => {
+                    const sa = statusOrder[a.status] ?? 1;
+                    const sb = statusOrder[b.status] ?? 1;
+                    if (sa !== sb) return sa - sb;
+                    return new Date(b.timestamp) - new Date(a.timestamp);
+                });
+
+            // Split into active and done
+            const active = sorted.filter(o => o.status !== 'completed');
+            const done = sorted.filter(o => o.status === 'completed');
+
+            let html = '';
+
+            active.forEach(order => {
+                html += renderCard(order);
+            });
+
+            if (done.length > 0) {
+                html += `<div class="section-label">Completed</div>`;
+                done.forEach(order => {
+                    html += renderCard(order);
+                });
+            }
+
+            container.innerHTML = html;
+
+            // Update pending badge
+            const pendingCount = sorted.filter(o => o.status === 'pending').length;
+            const badge = document.getElementById('pendingBadge');
+            badge.textContent = pendingCount + ' pending';
+            badge.classList.toggle('has-pending', pendingCount > 0);
+        }
+
+        function renderCard(order) {
+            const isPending = order.status === 'pending';
+            const isAccepted = order.status === 'accepted';
+            const isDone = order.status === 'completed';
+            const cardClass = isDone ? 'done' : (isAccepted ? 'accepted' : '');
+
+            let itemsHtml = '';
+            if (order.items) {
+                order.items.forEach(item => {
+                    itemsHtml += `
+                        <div class="order-item">
+                            <span class="item-qty">${item.quantity}x</span>
+                            <span class="item-name">${item.name}</span>
+                            <span class="item-price">₹${item.subtotal}</span>
+                        </div>`;
+                });
+            }
+
+            let actionsHtml = '';
+            if (isPending) {
+                actionsHtml = `
+                    <div class="order-actions">
+                        <button class="action-btn btn-accept" onclick="acceptOrder('${order._key}')">ACCEPT ORDER</button>
+                    </div>`;
+            } else if (isAccepted) {
+                actionsHtml = `
+                    <div class="order-actions">
+                        <button class="action-btn btn-done" onclick="markDone('${order._key}')">DONE</button>
+                        <button class="action-btn btn-dismiss" onclick="deleteOrder('${order._key}')">DELETE</button>
+                    </div>`;
+            }
+
+            return `
+                <div class="order-card ${cardClass}">
+                    <div class="order-room-bar">
+                        <div class="room-number">${order.room}</div>
+                        <div class="order-time">
+                            <div class="ago">${timeAgo(order.timestamp)}</div>
+                            <div>${clockTime(order.timestamp)}</div>
+                        </div>
+                    </div>
+                    <div class="order-items">${itemsHtml}</div>
+                    <div class="order-total">
+                        <span>Total</span>
+                        <span>₹${order.total}</span>
+                    </div>
+                    ${actionsHtml}
+                </div>`;
+        }
+
+        // Actions — exposed globally for onclick
+        window.acceptOrder = function(key) {
+            database.ref(`orders/${key}/status`).set('accepted');
+        };
+
+        window.markDone = function(key) {
+            database.ref(`orders/${key}/status`).set('completed');
+        };
+
+        window.deleteOrder = function(key) {
+            if (confirm('Delete this order?')) {
+                database.ref(`orders/${key}`).remove();
+            }
+        };
+
+        // Listen to Firebase
+        database.ref('orders').on('value', (snapshot) => {
+            const data = snapshot.val() || {};
+
+            // Detect truly new pending orders
+            const newPendingKeys = new Set(
+                Object.keys(data).filter(k => data[k].status === 'pending')
+            );
+            const hasNewPending = [...newPendingKeys].some(k => !previousPendingKeys.has(k));
+
+            orders = data;
+            render();
+
+            if (hasNewPending) {
+                showBanner();
+                if (!muted) startRinging();
+            }
+
+            // Stop ringing if no pending
+            const hasPending = Object.values(orders).some(o => o.status === 'pending');
+            if (!hasPending) {
+                stopRinging();
+                dismissBanner();
+            }
+
+            previousPendingKeys = newPendingKeys;
+        });
+
+        // Init audio on first click anywhere (browser autoplay policy)
+        document.addEventListener('click', function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            document.removeEventListener('click', initAudio);
+        }, { once: true });
+
+        } // end initApp
+    </script>
+</body>
+</html>

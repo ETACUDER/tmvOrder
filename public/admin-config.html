@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMV Settings</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a0a0a;
+            color: #e0d5c5;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .topbar {
+            position: sticky; top: 0; z-index: 100;
+            background: #1a0a0a;
+            border-bottom: 1px solid #3d1520;
+            padding: 12px 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .topbar-title { font-size: 15px; font-weight: 700; color: #d4af37; letter-spacing: 1px; }
+        .back-link { color: #d4af37; font-size: 13px; text-decoration: none; }
+
+        .section {
+            padding: 20px 24px;
+            border-bottom: 1px solid #2d1117;
+        }
+        .section-title {
+            font-size: 13px; color: #888; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 16px; font-weight: 600;
+        }
+
+        .toggle-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0;
+        }
+        .toggle-label { font-size: 15px; font-weight: 600; }
+        .toggle-sub { font-size: 12px; color: #777; margin-top: 2px; }
+
+        .toggle {
+            width: 52px; height: 28px; border-radius: 14px;
+            background: #555; border: none; cursor: pointer;
+            position: relative; transition: background 0.2s;
+        }
+        .toggle.on { background: #2ed573; }
+        .toggle::after {
+            content: ''; position: absolute;
+            top: 3px; left: 3px;
+            width: 22px; height: 22px;
+            border-radius: 50%; background: white;
+            transition: transform 0.2s;
+        }
+        .toggle.on::after { transform: translateX(24px); }
+
+        .time-row {
+            display: flex; gap: 16px; align-items: center; padding: 12px 0;
+        }
+        .time-row label { font-size: 14px; color: #aaa; min-width: 50px; }
+        .time-input {
+            background: #2d1117; border: 1px solid #3d1520;
+            color: #e0d5c5; padding: 10px 14px; border-radius: 8px;
+            font-size: 16px; width: 130px;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0a0a; border: none; border-radius: 10px;
+            padding: 12px 28px; font-size: 15px; font-weight: 700;
+            cursor: pointer; margin-top: 12px;
+        }
+        .save-btn:active { transform: scale(0.97); }
+        .saved-msg { color: #2ed573; font-size: 13px; margin-left: 12px; display: none; }
+
+        .menu-list { margin-top: 8px; }
+        .menu-cat { font-size: 14px; font-weight: 700; color: #d4af37; padding: 12px 0 6px; }
+        .menu-item-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 0; border-bottom: 1px solid #1f0d12;
+        }
+        .menu-item-name { font-size: 14px; }
+        .menu-item-name.disabled { color: #555; text-decoration: line-through; }
+        .menu-item-price { font-size: 13px; color: #888; }
+
+        .search-input {
+            width: 100%;
+            background: #2d1117; border: 1px solid #3d1520;
+            color: #e0d5c5; padding: 10px 14px; border-radius: 8px;
+            font-size: 14px; margin-bottom: 12px;
+        }
+        .search-input::placeholder { color: #555; }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <div class="topbar">
+        <span class="topbar-title">SETTINGS</span>
+        <a href="admin.html" class="back-link">← Back to Orders</a>
+    </div>
+
+    <div id="content" style="display:none;">
+
+    <div class="section">
+        <div class="section-title">Online Ordering</div>
+        <div class="toggle-row">
+            <div>
+                <div class="toggle-label">Accept Online Orders</div>
+                <div class="toggle-sub">When off, guests see "Call to order" only</div>
+            </div>
+            <button class="toggle" id="orderingToggle" onclick="toggleOrdering()"></button>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Ordering Hours (IST)</div>
+        <div class="time-row">
+            <label>Open</label>
+            <input type="time" class="time-input" id="openTime" value="07:00">
+        </div>
+        <div class="time-row">
+            <label>Close</label>
+            <input type="time" class="time-input" id="closeTime" value="23:00">
+        </div>
+        <div style="padding-top:8px;">
+            <button class="save-btn" onclick="saveHours()">Save Hours</button>
+            <span class="saved-msg" id="hoursSaved">Saved!</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Menu Items</div>
+        <input type="text" class="search-input" id="menuSearch" placeholder="Search items..." oninput="renderMenu()">
+        <div class="menu-list" id="menuList"></div>
+    </div>
+
+    </div>
+
+    <script>
+        const ALLOWED_EMAIL = 'themangalview@gmail.com';
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user && user.email === ALLOWED_EMAIL) {
+                document.getElementById('content').style.display = 'block';
+                init();
+            } else {
+                window.location.href = 'admin.html';
+            }
+        });
+
+        // Same menu data as menu.html
+        const menuData = {
+            "Appetizer": [
+                { id: "chilly-paneer", name: "Classic Chilly Paneer", price: 299 },
+                { id: "subz-malai", name: "Subz Malai Kabab", price: 299 },
+                { id: "veg-manchurian", name: "Vegetable Manchurian", price: 299 },
+                { id: "hara-bhara", name: "Hara Bhara Kabab", price: 299 },
+                { id: "crispy-corn", name: "Crispy Corn", price: 299 },
+                { id: "soya-chaap", name: "Tandoori Soya Chaap", price: 299 },
+                { id: "honey-chilli-potato", name: "Honey Chilli Potato", price: 299 },
+                { id: "achari-paneer", name: "Achari Paneer Tikka", price: 379 },
+                { id: "stuffed-mushroom", name: "Stuffed Tandoori Mushroom", price: 329 },
+                { id: "kabab-platter", name: "Assorted Kabab Platter", price: 449 }
+            ],
+            "World Cuisine": [
+                { id: "cheese-poppers", name: "Cheese Poppers", price: 349 },
+                { id: "nachos", name: "Mouth Watering Nachos", price: 329 },
+                { id: "pasta", name: "Pasta (Red or White)", price: 399 },
+                { id: "baked-veg", name: "Baked Vegetable", price: 399 },
+                { id: "exotic-crispy", name: "Exotic Crispy Vegetable", price: 399 },
+                { id: "hakka-noodles", name: "Hakka Noodles", price: 299 },
+                { id: "chilli-garlic-noodles", name: "Chilli Garlic Noodles", price: 299 }
+            ],
+            "Pizza & Sandwich": [
+                { id: "margherita", name: "Margherita Pizza", price: 399 },
+                { id: "farm-pizza", name: "Fresh Farm Pizza", price: 399 },
+                { id: "special-pizza", name: "Lake City Special Pizza", price: 449 },
+                { id: "bombay-sandwich", name: "Bombay Street Sandwich", price: 249 },
+                { id: "cheese-sandwich", name: "Veg Cheese Grilled Sandwich", price: 249 }
+            ],
+            "Soups": [
+                { id: "manchow", name: "Manchow Soup", price: 179 },
+                { id: "hot-sour", name: "Hot & Sour Soup", price: 179 },
+                { id: "tomato-soup", name: "Cream Of Tomato", price: 179 },
+                { id: "corn-soup", name: "Sweet Corn Veg Soup", price: 179 }
+            ],
+            "Salad & Raita": [
+                { id: "green-salad", name: "Fresh Green Salad", price: 129 },
+                { id: "masala-papad", name: "Masala Papad (2 pcs)", price: 99 },
+                { id: "corn-chaat", name: "Masala Corn Chaat", price: 149 },
+                { id: "aloo-chana", name: "Aloo Chana Chaat", price: 149 },
+                { id: "buttermilk", name: "Butter Milk", price: 80 },
+                { id: "raita", name: "Raita", price: 169 }
+            ],
+            "Rajasthani Special": [
+                { id: "dal-baati", name: "Dal Baati Churma", price: 349 },
+                { id: "jodhpuri-aloo", name: "Jodhpuri Aloo Pyaz", price: 299 },
+                { id: "besan-gatta", name: "Besan Gatta Curry", price: 299 },
+                { id: "sev-tamater", name: "Sev Tamater", price: 299 },
+                { id: "kadhi-pakoda", name: "Kadhi Pakoda", price: 299 },
+                { id: "aloo-gobhi", name: "Aloo Gobhi Adaraki", price: 299 },
+                { id: "lehsuni-paneer", name: "Lehsuni Paneer Methi", price: 349 },
+                { id: "subz-diwani", name: "Subz Diwani Handi", price: 299 }
+            ],
+            "Main Course": [
+                { id: "shahi-paneer", name: "Shahi Paneer", price: 349 },
+                { id: "mixed-veg", name: "Mixed Vegetable", price: 299 },
+                { id: "paneer-pakiza", name: "Paneer Pakiza", price: 349 },
+                { id: "chole-masala", name: "Chole Masala", price: 299 },
+                { id: "paneer-lababdar", name: "Paneer Lababdar", price: 349 },
+                { id: "corn-palak", name: "Corn Palak Masala", price: 299 },
+                { id: "malai-kofta", name: "Malai Kofta", price: 399 },
+                { id: "kaju-curry", name: "Kaju Curry", price: 479 },
+                { id: "kadai-paneer", name: "Kadai Paneer", price: 349 },
+                { id: "mushroom-mutter", name: "Mushroom Mutter Masala", price: 299 },
+                { id: "paneer-tikka-masala", name: "Paneer Tikka Masala", price: 349 }
+            ],
+            "Dal": [
+                { id: "dal-fry", name: "Dal Fry", price: 229 },
+                { id: "dal-tadka", name: "Dal Tadka", price: 249 },
+                { id: "dal-makhani", name: "Dal Makhani", price: 299 }
+            ],
+            "Rice": [
+                { id: "steamed-rice", name: "Steamed Rice", price: 229 },
+                { id: "jeera-rice", name: "Jeera Rice", price: 249 },
+                { id: "veg-pulao", name: "Vegetable Pulao", price: 269 },
+                { id: "schezwan-rice", name: "Schezwan Fried Rice", price: 269 },
+                { id: "veg-biryani", name: "Vegetable Biryani", price: 299 },
+                { id: "butter-khichdi", name: "Butter Masala Khichdi", price: 249 }
+            ],
+            "Breads": [
+                { id: "tandoori-roti", name: "Tandoori Roti", price: 25 },
+                { id: "naan", name: "Naan", price: 60 },
+                { id: "laccha-paratha", name: "Laccha Paratha", price: 60 },
+                { id: "stuffed-kulcha", name: "Stuffed Kulcha", price: 89 },
+                { id: "garlic-naan", name: "Garlic Naan", price: 99 },
+                { id: "cheese-naan", name: "Cheese Naan", price: 120 },
+                { id: "cheese-garlic-naan", name: "Cheese Garlic Naan", price: 130 },
+                { id: "missi-roti", name: "Missi Roti", price: 60 },
+                { id: "bread-basket", name: "Assorted Bread Basket", price: 199 }
+            ],
+            "Desserts": [
+                { id: "ice-cream", name: "Ice Cream (2 Scoops)", price: 179 },
+                { id: "brownie", name: "Hot Chocolate Brownie", price: 199 },
+                { id: "brownie-ice", name: "Brownie With Ice Cream", price: 249 },
+                { id: "gulab-jamun", name: "Gulab Jamun (3 pcs)", price: 149 },
+                { id: "sizzling-brownie", name: "Sizzling Brownie", price: 299 }
+            ],
+            "Beverages": [
+                { id: "milk-shake", name: "Milk Shake", price: 249 },
+                { id: "masala-tea", name: "Masala Tea", price: 60 },
+                { id: "hot-coffee", name: "Hot Coffee", price: 70 },
+                { id: "lemon-tea", name: "Lemon Tea", price: 70 },
+                { id: "cold-coffee", name: "Cold Coffee", price: 199 },
+                { id: "cold-coffee-ice", name: "Cold Coffee + Ice Cream", price: 249 },
+                { id: "lime-soda", name: "Fresh Lime Soda", price: 120 },
+                { id: "soft-drink", name: "Canned Soft Drink", price: 99 },
+                { id: "lassi", name: "Lassi", price: 169 },
+                { id: "hot-chocolate", name: "Hot Chocolate", price: 149 },
+                { id: "ginger-ale", name: "Ginger Ale", price: 140 },
+                { id: "diet-coke", name: "Diet Coke", price: 120 },
+                { id: "plain-soda", name: "Plain Soda", price: 50 },
+                { id: "mineral-water", name: "Mineral Water", price: 20 }
+            ]
+        };
+
+        let disabledItems = {};
+        let orderingEnabled = true;
+
+        function init() {
+            // Load config
+            database.ref('config').on('value', snap => {
+                const cfg = snap.val() || {};
+                orderingEnabled = cfg.orderingEnabled !== false;
+                disabledItems = cfg.disabledItems || {};
+
+                document.getElementById('orderingToggle').classList.toggle('on', orderingEnabled);
+                document.getElementById('openTime').value = cfg.openTime || '07:00';
+                document.getElementById('closeTime').value = cfg.closeTime || '23:00';
+                renderMenu();
+            });
+        }
+
+        function toggleOrdering() {
+            orderingEnabled = !orderingEnabled;
+            database.ref('config/orderingEnabled').set(orderingEnabled);
+            document.getElementById('orderingToggle').classList.toggle('on', orderingEnabled);
+        }
+
+        function saveHours() {
+            const open = document.getElementById('openTime').value;
+            const close = document.getElementById('closeTime').value;
+            database.ref('config/openTime').set(open);
+            database.ref('config/closeTime').set(close);
+            const msg = document.getElementById('hoursSaved');
+            msg.style.display = 'inline';
+            setTimeout(() => msg.style.display = 'none', 2000);
+        }
+
+        function toggleItem(id) {
+            if (disabledItems[id]) {
+                database.ref(`config/disabledItems/${id}`).remove();
+            } else {
+                database.ref(`config/disabledItems/${id}`).set(true);
+            }
+        }
+
+        function renderMenu() {
+            const search = document.getElementById('menuSearch').value.toLowerCase();
+            const container = document.getElementById('menuList');
+            let html = '';
+
+            for (const [cat, items] of Object.entries(menuData)) {
+                const filtered = items.filter(i => !search || i.name.toLowerCase().includes(search));
+                if (filtered.length === 0) continue;
+
+                html += `<div class="menu-cat">${cat}</div>`;
+                filtered.forEach(item => {
+                    const off = !!disabledItems[item.id];
+                    html += `
+                        <div class="menu-item-row">
+                            <div>
+                                <span class="menu-item-name ${off ? 'disabled' : ''}">${item.name}</span>
+                                <span class="menu-item-price"> ₹${item.price}</span>
+                            </div>
+                            <button class="toggle ${off ? '' : 'on'}" onclick="toggleItem('${item.id}')" style="width:44px;height:24px;">
+                            </button>
+                        </div>`;
+                });
+            }
+
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

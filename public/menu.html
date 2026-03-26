@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TMV Menu</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f4ed;
+            min-height: 100vh;
+            padding-bottom: 100px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #3d1520 0%, #5a1a2a 50%, #2d1117 100%);
+            color: #f0e8d8;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .room-badge {
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0a0a;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        /* Category nav — horizontal scroll */
+        .cat-nav {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 12px 16px;
+            background: #faf6ef;
+            border-bottom: 1px solid #e8dcc8;
+            position: sticky;
+            top: 54px;
+            z-index: 90;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .cat-nav::-webkit-scrollbar { display: none; }
+
+        .cat-pill {
+            flex-shrink: 0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid #d4c5a9;
+            background: #faf6ef;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            color: #6b5a4a;
+            transition: all 0.2s;
+        }
+
+        .cat-pill.active {
+            background: #3d1520;
+            color: #d4af37;
+            border-color: #3d1520;
+        }
+
+        /* Menu items */
+        .menu-section {
+            padding: 12px 16px;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #3d1520;
+            padding: 16px 0 10px;
+            position: sticky;
+            top: 100px;
+            background: #f8f4ed;
+            z-index: 50;
+        }
+
+        .menu-item {
+            background: #fffdf8;
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 1px 4px rgba(61,21,32,0.08);
+            border: 1px solid #f0e8d8;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d1117;
+            margin-bottom: 3px;
+        }
+
+        .item-desc {
+            font-size: 13px;
+            color: #8a7a6a;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .item-price {
+            font-size: 16px;
+            font-weight: 700;
+            color: #b8860b;
+            margin-top: 4px;
+        }
+
+        /* Dish image */
+        .item-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #f0f0f0;
+            flex-shrink: 0;
+        }
+
+        .item-img.placeholder {
+            display: none;
+        }
+
+        /* Quantity controls */
+        .qty-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            flex-shrink: 0;
+        }
+
+        .qty-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #3d1520;
+            background: #fffdf8;
+            color: #3d1520;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 22px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .qty-btn:active {
+            background: #3d1520;
+            color: #d4af37;
+            transform: scale(0.92);
+        }
+
+        .qty-count {
+            min-width: 32px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .qty-count.zero {
+            color: #ccc;
+        }
+
+        /* Add button — shown when qty is 0 */
+        .add-btn {
+            padding: 10px 22px;
+            background: #3d1520;
+            color: #d4af37;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .add-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Cart bar */
+        .cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #3d1520;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.3);
+            padding: 14px 20px;
+            display: none;
+            z-index: 200;
+        }
+
+        .cart-bar.show {
+            display: block;
+        }
+
+        .cart-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .cart-left {
+            font-size: 14px;
+            color: #c0a080;
+        }
+
+        .cart-left strong {
+            font-size: 20px;
+            color: #f0e8d8;
+        }
+
+        .cart-btn {
+            padding: 14px 28px;
+            background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            color: #1a0a0a;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .cart-btn:active {
+            transform: scale(0.97);
+        }
+
+        /* Order placed overlay */
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .overlay.show {
+            display: flex;
+        }
+
+        .overlay-card {
+            background: linear-gradient(170deg, #faf6ef, #f0e8d8);
+            border-radius: 20px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 340px;
+            width: 90%;
+            border: 1px solid rgba(212,175,55,0.3);
+        }
+
+        .overlay-icon {
+            font-size: 60px;
+            margin-bottom: 16px;
+        }
+
+        .overlay-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #3d1520;
+            margin-bottom: 8px;
+        }
+
+        .overlay-sub {
+            color: #6b5a4a;
+            font-size: 15px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .overlay-btn {
+            padding: 14px 30px;
+            background: linear-gradient(135deg, #d4af37, #b8860b);
+            color: #1a0a0a;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-row">
+            <h1>The Mangal View</h1>
+            <span class="room-badge">Room <span id="roomNum">—</span></span>
+        </div>
+    </div>
+
+    <div class="cat-nav" id="catNav"></div>
+
+    <div class="menu-section" id="menuSection"></div>
+
+    <div class="cart-bar" id="cartBar">
+        <div class="cart-inner">
+            <div class="cart-left">
+                <span id="cartCount">0</span> items<br>
+                <strong>₹<span id="cartTotal">0</span></strong>
+            </div>
+            <button class="cart-btn" onclick="placeOrder()">Place Order</button>
+        </div>
+    </div>
+
+    <div class="cart-bar" id="browseBar" style="display:none;">
+        <div class="cart-inner">
+            <div class="cart-left" style="color:#f0e8d8;">
+                Browsing menu only
+            </div>
+            <span class="cart-btn" style="text-align:center;">Dial 9 from room phone</span>
+        </div>
+    </div>
+
+    <!-- Success overlay -->
+    <div class="overlay" id="successOverlay">
+        <div class="overlay-card">
+            <div class="overlay-icon">✅</div>
+            <div class="overlay-title">Order Placed!</div>
+            <div class="overlay-sub">
+                Your order has been sent to the kitchen.<br>
+                Room <strong id="overlayRoom">—</strong>
+            </div>
+            <button class="overlay-btn" onclick="window.location.href='order-status.html'">Track Order</button>
+        </div>
+    </div>
+
+    <script>
+        // Menu data
+        const menuData = {
+            "Appetizer": [
+                { id: "chilly-paneer", name: "Classic Chilly Paneer", price: 299, description: "Fried paneer cubes in spicy, tangy sauce" },
+                { id: "subz-malai", name: "Subz Malai Kabab", price: 299, description: "Vegetables with cottage cheese, potato, hung curd & cream" },
+                { id: "veg-manchurian", name: "Vegetable Manchurian", price: 299, description: "Crisp fried veg balls in garlic sauce" },
+                { id: "hara-bhara", name: "Hara Bhara Kabab", price: 299, description: "Green vegetables with spinach and potatoes" },
+                { id: "crispy-corn", name: "Crispy Corn", price: 299, description: "Fried corn kernels with spices" },
+                { id: "soya-chaap", name: "Tandoori Soya Chaap", price: 299, description: "Soya chaap in red tandoori spices" },
+                { id: "honey-chilli-potato", name: "Honey Chilli Potato", price: 299, description: "Potato fingers in sesame honey chilli sauce" },
+                { id: "achari-paneer", name: "Achari Paneer Tikka", price: 379, description: "Cottage cheese in tandoori paste & pickle" },
+                { id: "stuffed-mushroom", name: "Stuffed Tandoori Mushroom", price: 329, description: "Button mushrooms stuffed with paneer & nuts" },
+                { id: "kabab-platter", name: "Assorted Kabab Platter", price: 449, description: "Tandoori aloo, mushroom, paneer & subz malai" }
+            ],
+            "World Cuisine": [
+                { id: "cheese-poppers", name: "Cheese Poppers", price: 349, description: "Cheese balls with bell pepper, breadcrumbed" },
+                { id: "nachos", name: "Mouth Watering Nachos", price: 329, description: "Tortilla chips with corn, cheese, jalapeno, salsa" },
+                { id: "pasta", name: "Pasta (Red or White)", price: 399, description: "Pasta in tomato or white sauce with vegetables" },
+                { id: "baked-veg", name: "Baked Vegetable", price: 399, description: "Vegetables in white sauce, cheese topped & baked" },
+                { id: "exotic-crispy", name: "Exotic Crispy Vegetable", price: 399, description: "Babycorn, mushroom, bell pepper in sezwan sauce" },
+                { id: "hakka-noodles", name: "Hakka Noodles", price: 299, description: "Chinese style noodles stir fried with vegetables" },
+                { id: "chilli-garlic-noodles", name: "Chilli Garlic Noodles", price: 299, description: "Spicy garlic flavored noodles" }
+            ],
+            "Pizza & Sandwich": [
+                { id: "margherita", name: "Margherita Pizza", price: 399, description: "Tomato, basil and mozzarella" },
+                { id: "farm-pizza", name: "Fresh Farm Pizza", price: 399, description: "Cheese, olives, onion, capsicum & tomato" },
+                { id: "special-pizza", name: "Lake City Special Pizza", price: 449, description: "Onion, peppers, tomato, corn, mushroom & olives" },
+                { id: "bombay-sandwich", name: "Bombay Street Sandwich", price: 249, description: "Potato masala with fresh mint chutney" },
+                { id: "cheese-sandwich", name: "Veg Cheese Grilled Sandwich", price: 249, description: "Grilled with cheese, tomato, cucumber" }
+            ],
+            "Soups": [
+                { id: "manchow", name: "Manchow Soup", price: 179, description: "Indo-Chinese soup with vegetables" },
+                { id: "hot-sour", name: "Hot & Sour Soup", price: 179, description: "Peppery hot soup with veggies" },
+                { id: "tomato-soup", name: "Cream Of Tomato", price: 179, description: "Fresh tomatoes with Indian spices" },
+                { id: "corn-soup", name: "Sweet Corn Veg Soup", price: 179, description: "Sweet corn soup with vegetables" }
+            ],
+            "Salad & Raita": [
+                { id: "green-salad", name: "Fresh Green Salad", price: 129, description: "Cucumber, tomato, carrot and onion" },
+                { id: "masala-papad", name: "Masala Papad (2 pcs)", price: 99, description: "Roasted or fried" },
+                { id: "corn-chaat", name: "Masala Corn Chaat", price: 149, description: "Spiced corn chaat" },
+                { id: "aloo-chana", name: "Aloo Chana Chaat", price: 149, description: "Potato and chickpea chaat" },
+                { id: "buttermilk", name: "Butter Milk", price: 80, description: "Refreshing buttermilk" },
+                { id: "raita", name: "Raita", price: 169, description: "Veg / Boondi / Pineapple" }
+            ],
+            "Rajasthani Special": [
+                { id: "dal-baati", name: "Dal Baati Churma", price: 349, description: "3 baati, dal, churma & garlic chutney" },
+                { id: "jodhpuri-aloo", name: "Jodhpuri Aloo Pyaz", price: 299, description: "Baby potatoes & onion in rich gravy" },
+                { id: "besan-gatta", name: "Besan Gatta Curry", price: 299, description: "Gram flour dumplings in yoghurt curry" },
+                { id: "sev-tamater", name: "Sev Tamater", price: 299, description: "Gram flour noodles in tomato gravy" },
+                { id: "kadhi-pakoda", name: "Kadhi Pakoda", price: 299, description: "Chickpea flour curry with fritters" },
+                { id: "aloo-gobhi", name: "Aloo Gobhi Adaraki", price: 299, description: "Potatoes and cauliflower with fresh ginger" },
+                { id: "lehsuni-paneer", name: "Lehsuni Paneer Methi", price: 349, description: "Paneer with fenugreek in garlic gravy" },
+                { id: "subz-diwani", name: "Subz Diwani Handi", price: 299, description: "Mixed vegetables in spiced spinach gravy" }
+            ],
+            "Main Course": [
+                { id: "shahi-paneer", name: "Shahi Paneer", price: 349, description: "Paneer in creamy tomato cashew gravy" },
+                { id: "mixed-veg", name: "Mixed Vegetable", price: 299, description: "Cauliflower, carrot, beans & peas" },
+                { id: "paneer-pakiza", name: "Paneer Pakiza", price: 349, description: "Paneer in creamy nut gravy" },
+                { id: "chole-masala", name: "Chole Masala", price: 299, description: "Chickpea curry with onions and tomatoes" },
+                { id: "paneer-lababdar", name: "Paneer Lababdar", price: 349, description: "Rich tomato gravy with paneer" },
+                { id: "corn-palak", name: "Corn Palak Masala", price: 299, description: "Fresh spinach and sweet corn curry" },
+                { id: "malai-kofta", name: "Malai Kofta", price: 399, description: "Paneer balls with dry fruits in mild gravy" },
+                { id: "kaju-curry", name: "Kaju Curry", price: 479, description: "Cashews in creamy sweet gravy" },
+                { id: "kadai-paneer", name: "Kadai Paneer", price: 349, description: "Paneer with onions & capsicum" },
+                { id: "mushroom-mutter", name: "Mushroom Mutter Masala", price: 299, description: "Mushrooms and green peas curry" },
+                { id: "paneer-tikka-masala", name: "Paneer Tikka Masala", price: 349, description: "Roasted paneer in red gravy" }
+            ],
+            "Dal": [
+                { id: "dal-fry", name: "Dal Fry", price: 229, description: "Lentils tempered with ghee" },
+                { id: "dal-tadka", name: "Dal Tadka", price: 249, description: "Spiced lentils with ghee tempering" },
+                { id: "dal-makhani", name: "Dal Makhani", price: 299, description: "Black lentils with butter and cream" }
+            ],
+            "Rice": [
+                { id: "steamed-rice", name: "Steamed Rice", price: 229, description: "Plain steamed rice" },
+                { id: "jeera-rice", name: "Jeera Rice", price: 249, description: "Rice with cumin" },
+                { id: "veg-pulao", name: "Vegetable Pulao", price: 269, description: "Rice with mixed vegetables" },
+                { id: "schezwan-rice", name: "Schezwan Fried Rice", price: 269, description: "Spicy fried rice" },
+                { id: "veg-biryani", name: "Vegetable Biryani", price: 299, description: "Aromatic rice with vegetables" },
+                { id: "butter-khichdi", name: "Butter Masala Khichdi", price: 249, description: "Comfort food — rice and lentils" }
+            ],
+            "Breads": [
+                { id: "tandoori-roti", name: "Tandoori Roti", price: 25, description: "Plain / Butter" },
+                { id: "naan", name: "Naan", price: 60, description: "Plain / Butter" },
+                { id: "laccha-paratha", name: "Laccha Paratha", price: 60, description: "Layered wheat bread" },
+                { id: "stuffed-kulcha", name: "Stuffed Kulcha", price: 89, description: "Stuffed leavened bread" },
+                { id: "garlic-naan", name: "Garlic Naan", price: 99, description: "Naan with garlic" },
+                { id: "cheese-naan", name: "Cheese Naan", price: 120, description: "Naan stuffed with cheese" },
+                { id: "cheese-garlic-naan", name: "Cheese Garlic Naan", price: 130, description: "Cheese naan with garlic" },
+                { id: "missi-roti", name: "Missi Roti", price: 60, description: "Gram flour bread" },
+                { id: "bread-basket", name: "Assorted Bread Basket", price: 199, description: "Variety of breads" }
+            ],
+            "Desserts": [
+                { id: "ice-cream", name: "Ice Cream (2 Scoops)", price: 179, description: "Vanilla / Chocolate / American nuts" },
+                { id: "brownie", name: "Hot Chocolate Brownie", price: 199, description: "Warm chocolate brownie" },
+                { id: "brownie-ice", name: "Brownie With Ice Cream", price: 249, description: "Brownie + ice cream" },
+                { id: "gulab-jamun", name: "Gulab Jamun (3 pcs)", price: 149, description: "Traditional sweet" },
+                { id: "sizzling-brownie", name: "Sizzling Brownie", price: 299, description: "Brownie on sizzling plate with ice cream" }
+            ],
+            "Beverages": [
+                { id: "milk-shake", name: "Milk Shake", price: 249, description: "Oreo / Vanilla / Banana / Chocolate" },
+                { id: "masala-tea", name: "Masala Tea", price: 60, description: "Spiced Indian tea" },
+                { id: "hot-coffee", name: "Hot Coffee", price: 70, description: "Fresh brewed" },
+                { id: "lemon-tea", name: "Lemon Tea", price: 70, description: "Tea with lemon" },
+                { id: "cold-coffee", name: "Cold Coffee", price: 199, description: "Chilled coffee" },
+                { id: "cold-coffee-ice", name: "Cold Coffee + Ice Cream", price: 249, description: "Cold coffee topped with ice cream" },
+                { id: "lime-soda", name: "Fresh Lime Soda", price: 120, description: "Refreshing lime soda" },
+                { id: "soft-drink", name: "Canned Soft Drink", price: 99, description: "Canned beverage" },
+                { id: "lassi", name: "Lassi", price: 169, description: "Banana / Mango / Pineapple / Orange" },
+                { id: "hot-chocolate", name: "Hot Chocolate", price: 149, description: "Rich hot chocolate" },
+                { id: "ginger-ale", name: "Ginger Ale", price: 140, description: "Ginger flavored soda" },
+                { id: "diet-coke", name: "Diet Coke", price: 120, description: "Sugar-free cola" },
+                { id: "plain-soda", name: "Plain Soda", price: 50, description: "Soda water" },
+                { id: "mineral-water", name: "Mineral Water", price: 20, description: "Bottled water" }
+            ]
+        };
+
+        const cart = {};
+        let disabledItems = {};
+        let orderingOpen = true; // will be updated from config
+        const browseMode = new URLSearchParams(window.location.search).get('browse') === '1';
+        const roomNumber = browseMode ? 'Menu' : (sessionStorage.getItem('userRoom') || '—');
+        document.getElementById('roomNum').textContent = browseMode ? 'Browse' : roomNumber;
+        document.getElementById('overlayRoom').textContent = roomNumber;
+
+        // If no room and not browsing, go back
+        if (roomNumber === '—' && !browseMode) {
+            window.location.href = 'guest.html';
+        }
+
+        if (browseMode) {
+            document.getElementById('browseBar').style.display = 'block';
+        }
+
+        // Load config from Firebase
+        database.ref('config').on('value', snap => {
+            const cfg = snap.val() || {};
+            disabledItems = cfg.disabledItems || {};
+
+            // Check if ordering is enabled and within hours
+            const enabled = cfg.orderingEnabled !== false;
+            const openTime = cfg.openTime || '07:00';
+            const closeTime = cfg.closeTime || '23:00';
+            const now = new Date().toLocaleTimeString('en-GB', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: false });
+            const withinHours = now >= openTime && now <= closeTime;
+
+            orderingOpen = enabled && withinHours;
+
+            if (!orderingOpen && !browseMode) {
+                // Force browse mode — show call bar, hide cart
+                document.getElementById('browseBar').style.display = 'block';
+                document.getElementById('cartBar').classList.remove('show');
+                const browseLeft = document.querySelector('#browseBar .cart-left');
+                if (!enabled) {
+                    browseLeft.textContent = 'Online ordering is currently off';
+                } else {
+                    browseLeft.textContent = `Kitchen hours: ${openTime} – ${closeTime} IST`;
+                }
+            }
+
+            buildCatNav();
+            buildMenu();
+        });
+
+        // Build category nav
+        function buildCatNav() {
+            const nav = document.getElementById('catNav');
+            const cats = Object.keys(menuData);
+            nav.innerHTML = cats.map((cat, i) =>
+                `<div class="cat-pill ${i === 0 ? 'active' : ''}" onclick="scrollToCat('${cat}', this)">${cat}</div>`
+            ).join('');
+        }
+
+        function scrollToCat(cat, pill) {
+            document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+            const el = document.getElementById('cat-' + cat.replace(/[^a-zA-Z]/g, ''));
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Build menu
+        function buildMenu() {
+            const section = document.getElementById('menuSection');
+            let html = '';
+
+            for (const [cat, items] of Object.entries(menuData)) {
+                const catId = 'cat-' + cat.replace(/[^a-zA-Z]/g, '');
+                html += `<div id="${catId}" class="section-title">${cat}</div>`;
+
+                items.forEach(item => {
+                    if (disabledItems[item.id]) return;
+                    const qty = cart[item.id] || 0;
+                    const canOrder = !browseMode && orderingOpen;
+                    html += `
+                        <div class="menu-item" id="item-${item.id}">
+                            <div class="item-info">
+                                <div class="item-name">${item.name}</div>
+                                <div class="item-desc">${item.description}</div>
+                                <div class="item-price">₹${item.price}</div>
+                            </div>
+                            ${!canOrder ? '' : (qty === 0
+                                ? `<button class="add-btn" onclick="addItem('${item.id}')">ADD</button>`
+                                : `<div class="qty-wrap">
+                                    <button class="qty-btn" onclick="changeQty('${item.id}', -1)">−</button>
+                                    <span class="qty-count">${qty}</span>
+                                    <button class="qty-btn" onclick="changeQty('${item.id}', 1)">+</button>
+                                  </div>`
+                            )}
+                        </div>`;
+                });
+            }
+
+            section.innerHTML = html;
+        }
+
+        function getItem(id) {
+            for (const items of Object.values(menuData)) {
+                const item = items.find(i => i.id === id);
+                if (item) return item;
+            }
+        }
+
+        function addItem(id) {
+            cart[id] = 1;
+            rebuildItem(id);
+            updateCart();
+        }
+
+        function changeQty(id, delta) {
+            cart[id] = Math.max(0, (cart[id] || 0) + delta);
+            if (cart[id] === 0) delete cart[id];
+            rebuildItem(id);
+            updateCart();
+        }
+
+        // Re-render single item (avoid full rebuild)
+        function rebuildItem(id) {
+            const item = getItem(id);
+            const el = document.getElementById('item-' + id);
+            if (!el || !item) return;
+
+            const qty = cart[id] || 0;
+            const right = qty === 0
+                ? `<button class="add-btn" onclick="addItem('${id}')">ADD</button>`
+                : `<div class="qty-wrap">
+                    <button class="qty-btn" onclick="changeQty('${id}', -1)">−</button>
+                    <span class="qty-count">${qty}</span>
+                    <button class="qty-btn" onclick="changeQty('${id}', 1)">+</button>
+                  </div>`;
+
+            el.innerHTML = `
+                <div class="item-info">
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-desc">${item.description}</div>
+                    <div class="item-price">₹${item.price}</div>
+                </div>
+                ${right}`;
+        }
+
+        function updateCart() {
+            let count = 0, total = 0;
+            for (const [id, qty] of Object.entries(cart)) {
+                const item = getItem(id);
+                if (item) { count += qty; total += item.price * qty; }
+            }
+            document.getElementById('cartCount').textContent = count;
+            document.getElementById('cartTotal').textContent = total;
+            document.getElementById('cartBar').classList.toggle('show', count > 0);
+        }
+
+        function placeOrder() {
+            if (Object.keys(cart).length === 0) return;
+
+            const items = [];
+            let total = 0;
+            for (const [id, qty] of Object.entries(cart)) {
+                const item = getItem(id);
+                if (item) {
+                    items.push({ name: item.name, quantity: qty, price: item.price, subtotal: item.price * qty });
+                    total += item.price * qty;
+                }
+            }
+
+            const order = {
+                room: roomNumber,
+                items,
+                total,
+                timestamp: new Date().toISOString(),
+                status: 'pending'
+            };
+
+            // Disable button while saving
+            const btn = document.querySelector('.cart-btn');
+            btn.textContent = 'Sending...';
+            btn.disabled = true;
+
+            database.ref('orders').push(order)
+                .then(() => {
+                    // Clear cart and show success
+                    Object.keys(cart).forEach(k => delete cart[k]);
+                    buildMenu();
+                    updateCart();
+                    document.getElementById('successOverlay').classList.add('show');
+                })
+                .catch(() => {
+                    alert('Could not place order. Please try again.');
+                    btn.textContent = 'Place Order';
+                    btn.disabled = false;
+                });
+        }
+
+        // Init
+        buildCatNav();
+        buildMenu();
+    </script>
+</body>
+</html>
