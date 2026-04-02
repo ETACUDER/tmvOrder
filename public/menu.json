@@ -1,0 +1,144 @@
+{
+  "Mocktails": [
+    { "id": "shirley-temple", "name": "Shirley Temple", "price": 199, "description": "Grenadine with lemon soda & ginger, garnished with mint" },
+    { "id": "virgin-mojito", "name": "Virgin Mojito", "price": 199, "description": "Lime, mint & soda" },
+    { "id": "fruit-punch", "name": "Fruit Punch", "price": 199, "description": "Mixed fruit juices with vanilla ice cream" },
+    { "id": "virgin-pinacolada", "name": "Virgin Pinacolada", "price": 199, "description": "Pineapple juice & coconut cream blended with ice" },
+    { "id": "pomegranate-spritzer", "name": "Pomegranate Spritzer", "price": 199, "description": "Pomegranate, walnut & lemon topped with soda" },
+    { "id": "sparkling-peach", "name": "Sparkling Peach", "price": 199, "description": "Orange & peach juice with lemon-lime soda" },
+    { "id": "cinderella", "name": "Cinderella", "price": 199, "description": "Pineapple, orange & lemon with ginger ale & grenadine" },
+    { "id": "watermelon-mojito", "name": "Watermelon Mojito", "price": 199, "description": "Watermelon, mint, lime & soda" },
+    { "id": "tropical-paradise", "name": "Tropical Paradise", "price": 199, "description": "Pineapple, orange, coconut cream & blue curacao with grenadine" }
+  ],
+  "Appetizer": [
+    { "id": "tandoori-slider-buns", "name": "Tandoori Slider Buns", "price": 399, "description": "Paneer, veg & cheese filled buns cooked in tandoor, served with dal makhni sauce" },
+    { "id": "tandoori-malai-broccoli", "name": "Tandoori Malai Broccoli", "price": 399, "description": "Cream, cheese & hung curd marinated broccoli, roasted to perfection" },
+    { "id": "burasi-kabab", "name": "Burasi Kabab", "price": 299, "description": "Cheese-stuffed paneer & potato kabab with beetroot, deep-fried till golden" },
+    { "id": "pasta", "name": "Choice of Pasta", "price": 399, "description": "Alfredo / Arabiata / Pink / Pesto" },
+    { "id": "paneer-makhmali-tikka", "name": "Paneer Makhmali Tikka", "price": 399, "description": "Paneer stuffed with cheesy filling, marinated in tandoori masala & grilled" },
+    { "id": "chinese-bhel", "name": "Chinese Bhel", "price": 299, "description": "Vegetables with Manchurian paneer, crispy noodles & Chinese sauces" },
+    { "id": "crispy-palak", "name": "Crispy Palak Patta Chaat", "price": 299, "description": "Crisp fried spinach leaves topped with yogurt, chutney & spices" },
+    { "id": "papdi-chaat", "name": "Papdi Chaat", "price": 299, "description": "Crisp puris with sweet, sour & spicy chutneys and sev" },
+    { "id": "chilly-paneer", "name": "Classic Chilly Paneer", "price": 299, "description": "Fried paneer cubes in spicy, tangy sauce with bell peppers & garlic" },
+    { "id": "subz-malai", "name": "Subz Malai Kabab", "price": 299, "description": "Vegetables with cottage cheese, potato, hung curd & cream" },
+    { "id": "veg-manchurian", "name": "Vegetable Manchurian", "price": 299, "description": "Crisp fried veg balls in sweet, sour & hot garlic sauce" },
+    { "id": "hara-bhara", "name": "Hara Bhara Kabab", "price": 299, "description": "Green vegetables with spinach and potatoes, deep fried" },
+    { "id": "crispy-corn", "name": "Crispy Corn", "price": 299, "description": "Fried corn kernels with spices" },
+    { "id": "soya-chaap", "name": "Tandoori Soya Chaap", "price": 299, "description": "Soya chaap marinated in red tandoori spices" },
+    { "id": "honey-chilli-potato", "name": "Honey Chilli Potato", "price": 325, "description": "Potato fingers in sesame honey chilli sauce" },
+    { "id": "achari-paneer", "name": "Achari Paneer Tikka", "price": 399, "description": "Cottage cheese in tandoori paste mixed with pickle, cooked in tandoor" },
+    { "id": "stuffed-mushroom", "name": "Stuffed Tandoori Mushroom", "price": 399, "description": "Button mushrooms stuffed with paneer, cashew paste & nuts, cooked in tandoor" },
+    { "id": "kabab-platter", "name": "Assorted Kabab Platter", "price": 499, "description": "Tandoori aloo, mushroom, paneer & subz malai kabab" }
+  ],
+  "World Cuisine": [
+    { "id": "cheese-poppers", "name": "Cheese Poppers", "price": 399, "description": "Cheese balls with bell pepper, seasoning coated with breadcrumbs" },
+    { "id": "nachos", "name": "Mouth Watering Nachos", "price": 329, "description": "Baked tortilla chips with corn, cheese & jalapeno" },
+    { "id": "baked-veg", "name": "Baked Vegetable", "price": 399, "description": "Exotic vegetables in white sauce, cheese topped & baked" },
+    { "id": "exotic-crispy", "name": "Exotic Crispy Vegetable", "price": 399, "description": "Babycorn, mushroom, bell pepper & broccoli in sezwan sauce" },
+    { "id": "hakka-noodles", "name": "Hakka Noodles", "price": 299, "description": "Chinese style noodles stir fried with vegetables" },
+    { "id": "chilli-garlic-noodles", "name": "Chilli Garlic Noodles", "price": 299, "description": "Noodles stir fried in spicy schezwan sauce" }
+  ],
+  "Soups": [
+    { "id": "manchow", "name": "Manchow Soup", "price": 179, "description": "Indo-Chinese soup with exotic vegetables & seasoning" },
+    { "id": "hot-sour", "name": "Hot & Sour Soup", "price": 179, "description": "Peppery hot Sichuan soup with veggies" },
+    { "id": "tomato-soup", "name": "Cream of Tomato", "price": 179, "description": "Fresh tomatoes with Indian spices" },
+    { "id": "corn-soup", "name": "Sweet Corn Veg Soup", "price": 179, "description": "Sweetcorn soup with vegetables" }
+  ],
+  "Salad & Raita": [
+    { "id": "green-salad", "name": "Fresh Green Salad", "price": 129, "description": "Cucumber, tomato, carrot and onion" },
+    { "id": "masala-papad", "name": "Masala Papad (2 pcs)", "price": 120, "description": "Roasted or fried" },
+    { "id": "corn-chaat", "name": "Masala Corn Chaat", "price": 199, "description": "Spiced corn chaat" },
+    { "id": "raita", "name": "Raita", "price": 169, "description": "Veg / Boondi / Pineapple" },
+    { "id": "aloo-chana", "name": "Aloo Chana Chaat", "price": 199, "description": "Potato and chickpea chaat" },
+    { "id": "masala-peanut", "name": "Masala Peanut", "price": 149, "description": "Spiced peanuts" }
+  ],
+  "Rajasthani Special": [
+    { "id": "dal-baati", "name": "Dal Baati Churma", "price": 349, "description": "3 baati, dal, churma & garlic chutney" },
+    { "id": "jodhpuri-aloo", "name": "Jodhpuri Aloo Pyaz", "price": 299, "description": "Baby potatoes & onion in whole spices" },
+    { "id": "besan-gatta", "name": "Besan Gatta Curry", "price": 299, "description": "Gram flour dumplings in yoghurt curry" },
+    { "id": "sev-tamater", "name": "Sev Tamater", "price": 299, "description": "Rajasthani sev in tomato gravy" },
+    { "id": "kadhi-pakoda", "name": "Kadhi Pakoda", "price": 299, "description": "Chickpea flour curry with fritters" },
+    { "id": "aloo-gobhi", "name": "Aloo Gobhi Adaraki", "price": 299, "description": "Potatoes & cauliflower with fresh ginger" },
+    { "id": "lehsuni-paneer", "name": "Lehsuni Paneer Methi", "price": 349, "description": "Paneer with fenugreek in garlic gravy" },
+    { "id": "subz-diwani", "name": "Subz Diwani Handi", "price": 299, "description": "Mixed vegetables in spiced spinach gravy" },
+    { "id": "veg-udaipuri", "name": "Vegetable Udaipuri", "price": 299, "description": "Cauliflower, carrot, beans & green peas in Indian spices" }
+  ],
+  "Main Course": [
+    { "id": "paneer-pasanda", "name": "Paneer Pasanda", "price": 349, "description": "Paneer slices stuffed with dry fruits, in rich tomato & onion gravy" },
+    { "id": "malai-kofta", "name": "Anguri Malai Kofta", "price": 399, "description": "Soft malai koftas in creamy cashew-spinach gravy" },
+    { "id": "shahi-paneer", "name": "Shahi Paneer", "price": 349, "description": "Paneer in creamy tomato cashew gravy" },
+    { "id": "paneer-pakiza", "name": "Paneer Pakiza", "price": 349, "description": "Paneer rolled in papad in creamy onion & nut gravy" },
+    { "id": "chole-masala", "name": "Chole Masala", "price": 299, "description": "Chickpea curry with onions, tomatoes & spices" },
+    { "id": "paneer-lababdar", "name": "Paneer Lababdar", "price": 349, "description": "Rich, creamy tomato gravy with paneer" },
+    { "id": "bhindi-masala", "name": "Bhindi Masala", "price": 249, "description": "Dry curry with okra, onions, tomatoes & spices" },
+    { "id": "kaju-curry", "name": "Kaju Curry", "price": 499, "description": "Cashews in creamy tomato gravy" },
+    { "id": "soya-chap-masala", "name": "Soya Chap Masala", "price": 299, "description": "Tandoor-grilled soya chaap in rich tomato gravy" },
+    { "id": "corn-palak", "name": "Corn Palak Masala", "price": 299, "description": "Fresh spinach and sweet corn curry" },
+    { "id": "kadai-paneer", "name": "Kadai Paneer", "price": 349, "description": "Paneer with onions, capsicum & freshly ground spices" },
+    { "id": "mushroom-mutter", "name": "Mushroom Mutter Masala", "price": 299, "description": "Mushrooms and green peas curry" },
+    { "id": "paneer-tikka-masala", "name": "Paneer Tikka Masala", "price": 349, "description": "Roasted paneer in red gravy" }
+  ],
+  "Dal": [
+    { "id": "dal-fry", "name": "Dal Fry", "price": 229, "description": "Lentils tempered with ghee" },
+    { "id": "dal-tadka", "name": "Dal Tadka", "price": 249, "description": "Spiced lentils with ghee tempering" },
+    { "id": "dal-makhani", "name": "Dal Makhani", "price": 299, "description": "Slow cooked black lentils with butter & cream" }
+  ],
+  "Rice": [
+    { "id": "steamed-rice", "name": "Steamed Rice", "price": 229, "description": "Plain steamed rice" },
+    { "id": "jeera-rice", "name": "Jeera Rice", "price": 249, "description": "Rice with cumin" },
+    { "id": "veg-pulao", "name": "Vegetable Pulao", "price": 269, "description": "Rice with mixed vegetables" },
+    { "id": "veg-fried-rice", "name": "Vegetable Fried Rice", "price": 269, "description": "Stir fried rice with vegetables" },
+    { "id": "schezwan-rice", "name": "Schezwan Fried Rice", "price": 269, "description": "Spicy fried rice" },
+    { "id": "veg-biryani", "name": "Vegetable Biryani", "price": 349, "description": "Aromatic rice with vegetables" },
+    { "id": "butter-khichdi", "name": "Butter Masala Khichdi", "price": 249, "description": "Rice and lentils with butter masala" },
+    { "id": "curd-rice", "name": "Curd Rice", "price": 229, "description": "Rice with seasoned curd" }
+  ],
+  "Breads": [
+    { "id": "tandoori-roti", "name": "Tandoori Roti", "price": 25, "description": "Plain / Butter (₹30)" },
+    { "id": "naan", "name": "Naan", "price": 60, "description": "Plain / Butter (₹70)" },
+    { "id": "laccha-paratha", "name": "Laccha Paratha", "price": 60, "description": "Layered wheat bread" },
+    { "id": "stuffed-kulcha", "name": "Stuffed Kulcha", "price": 89, "description": "Stuffed leavened bread" },
+    { "id": "garlic-naan", "name": "Garlic Naan", "price": 99, "description": "Naan with garlic" },
+    { "id": "cheese-naan", "name": "Cheese Naan", "price": 120, "description": "Naan stuffed with cheese" },
+    { "id": "cheese-garlic-naan", "name": "Cheese Garlic Naan", "price": 130, "description": "Cheese naan with garlic" },
+    { "id": "missi-roti", "name": "Missi Roti", "price": 60, "description": "Gram flour bread" },
+    { "id": "bread-basket", "name": "Assorted Bread Basket", "price": 199, "description": "Variety of breads" }
+  ],
+  "Desserts": [
+    { "id": "ice-cream", "name": "Ice Cream (2 Scoops)", "price": 199, "description": "Vanilla / Chocolate / American nuts" },
+    { "id": "brownie", "name": "Hot Chocolate Brownie", "price": 199, "description": "Warm chocolate brownie" },
+    { "id": "brownie-ice", "name": "Brownie With Ice Cream", "price": 249, "description": "Hot chocolate brownie with ice cream" },
+    { "id": "gulab-jamun", "name": "Gulab Jamun (3 pcs)", "price": 149, "description": "Traditional Indian sweet" },
+    { "id": "sizzling-brownie", "name": "Sizzling Brownie", "price": 299, "description": "Brownie on sizzling plate with ice cream" }
+  ],
+  "Beverages": [
+    { "id": "milk-shake", "name": "Milk Shake", "price": 269, "description": "Vanilla / Banana / Chocolate" },
+    { "id": "masala-tea", "name": "Masala Tea", "price": 60, "description": "Spiced Indian tea" },
+    { "id": "black-tea-coffee", "name": "Black Tea / Coffee", "price": 60, "description": "Plain tea or coffee" },
+    { "id": "hot-coffee", "name": "Hot Coffee", "price": 70, "description": "Fresh brewed" },
+    { "id": "lemon-tea", "name": "Lemon Tea", "price": 70, "description": "Tea with lemon" },
+    { "id": "cold-coffee", "name": "Cold Coffee", "price": 249, "description": "Chilled coffee" },
+    { "id": "cold-coffee-ice", "name": "Cold Coffee + Ice Cream", "price": 269, "description": "Cold coffee with ice cream" },
+    { "id": "lime-soda", "name": "Fresh Lime Soda", "price": 120, "description": "Refreshing lime soda" },
+    { "id": "soft-drink", "name": "Canned Soft Drink", "price": 99, "description": "Sprite / Coke / Thums Up" },
+    { "id": "lassi", "name": "Lassi", "price": 179, "description": "Banana / Mango / Pineapple / Orange" },
+    { "id": "hot-chocolate", "name": "Hot Chocolate (Bournvita)", "price": 149, "description": "Rich hot chocolate" },
+    { "id": "ginger-ale", "name": "Ginger Ale", "price": 140, "description": "Ginger flavored soda" },
+    { "id": "diet-coke", "name": "Diet Coke", "price": 120, "description": "Sugar-free cola" },
+    { "id": "mineral-water", "name": "Mineral Water", "price": 20, "description": "Bottled water" }
+  ],
+  "Breakfast": [
+    { "id": "paratha", "name": "Choice of Paratha", "price": 149, "description": "Aloo / Paneer / Gobhi" },
+    { "id": "chole-puri", "name": "Chole Puri", "price": 249, "description": "Chickpea curry with puri" },
+    { "id": "idly-sambar", "name": "Idly Sambar", "price": 249, "description": "Steamed idlis with sambar" },
+    { "id": "poha", "name": "Poha", "price": 149, "description": "Flattened rice with spices" },
+    { "id": "poori-bhaji", "name": "Poori Bhaji", "price": 249, "description": "Fried bread with potato curry" },
+    { "id": "vada-sambar", "name": "Vada Sambar", "price": 249, "description": "Fried lentil doughnuts with sambar" },
+    { "id": "veg-upma", "name": "Vegetable Upma", "price": 149, "description": "Semolina cooked with vegetables" },
+    { "id": "veg-pakoda", "name": "Vegetable Pakoda", "price": 249, "description": "Deep fried vegetable fritters" },
+    { "id": "paneer-pakoda-b", "name": "Paneer Pakoda", "price": 299, "description": "Deep fried paneer fritters" },
+    { "id": "maggi", "name": "Maggi", "price": 120, "description": "Classic instant noodles" },
+    { "id": "plain-sandwich", "name": "Plain Sandwich", "price": 199, "description": "Simple vegetable sandwich" },
+    { "id": "bread-butter", "name": "Bread Butter", "price": 99, "description": "Bread with butter" }
+  ]
+}
