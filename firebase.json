@@ -6,7 +6,9 @@
       "**/.*",
       "**/node_modules/**"
     ],
-    "rewrites": []
+    "rewrites": [
+      { "source": "/", "destination": "/guest.html" }
+    ]
   },
   "database": {
     "rules": "database.rules.json"

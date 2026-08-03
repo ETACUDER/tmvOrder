@@ -230,21 +230,37 @@
                 </div>`;
         }
 
-        function loadStatus(snapshot) {
-            const data = snapshot.val() || {};
-            const roomOrders = Object.values(data)
-                .filter(o => o.room === roomNumber)
-                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            renderStatus(roomOrders[0] || null);
-        }
-
         function refresh() {
             const card = document.getElementById('statusCard');
             card.style.opacity = '0.5';
             setTimeout(() => card.style.opacity = '1', 300);
         }
 
-        database.ref('orders').on('value', loadStatus);
+        // Listen to room's order index, then fetch each order's detail
+        if (roomNumber !== '—') {
+            database.ref(`roomOrders/${roomNumber}`).on('value', async snap => {
+                const index = snap.val();
+                if (!index) { renderStatus(null); return; }
+
+                // Get most recent order key
+                const twoHoursAgo = Date.now() - (2 * 60 * 60 * 1000);
+                const keys = Object.keys(index).filter(k => {
+                    const ts = new Date(index[k].timestamp).getTime();
+                    const active = index[k].status !== 'completed';
+                    return ts > twoHoursAgo && active;
+                }).sort((a, b) => {
+                    return new Date(index[b].timestamp) - new Date(index[a].timestamp);
+                });
+
+                if (keys.length === 0) { renderStatus(null); return; }
+
+                // Fetch the latest order detail
+                const latest = await database.ref('orders/' + keys[0]).once('value');
+                renderStatus(latest.val());
+            });
+        } else {
+            renderStatus(null);
+        }
     </script>
 </body>
 </html>

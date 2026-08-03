@@ -1,6 +1,27 @@
 {
   "rules": {
-    ".read": true,
-    ".write": true
+    "orders": {
+      ".read": "auth != null",
+      "$orderId": {
+        ".read": true,
+        ".write": "!data.exists() || auth != null"
+      }
+    },
+    "roomOrders": {
+      "$roomNumber": {
+        ".read": true,
+        "$orderId": {
+          ".write": "!data.exists()"
+        }
+      }
+    },
+    "config": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "adminPhones": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    }
   }
 }
