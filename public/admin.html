@@ -288,6 +288,54 @@
             font-family: Georgia, serif;
         }
 
+        .phone-input-wrap {
+            display: flex;
+            align-items: center;
+            background: #2d1117;
+            border: 1px solid #3d1520;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 14px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .phone-prefix {
+            padding: 14px 12px;
+            color: #d4af37;
+            font-size: 16px;
+            font-weight: 700;
+            border-right: 1px solid #3d1520;
+            background: #1a0a0a;
+        }
+
+        .phone-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #f0e8d8;
+            font-size: 18px;
+            padding: 14px 14px;
+            outline: none;
+            letter-spacing: 1px;
+        }
+
+        .otp-input {
+            background: #2d1117;
+            border: 1px solid #3d1520;
+            border-radius: 12px;
+            color: #f0e8d8;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 8px;
+            padding: 14px 20px;
+            text-align: center;
+            width: 100%;
+            max-width: 300px;
+            outline: none;
+            margin-bottom: 14px;
+        }
+
         .login-btn {
             padding: 16px 32px;
             background: linear-gradient(135deg, #d4af37, #b8860b);
@@ -297,20 +345,34 @@
             font-size: 16px;
             font-weight: 700;
             cursor: pointer;
+            width: 100%;
+            max-width: 300px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        .login-btn:hover {
+        .login-btn:disabled { opacity: 0.6; cursor: default; }
+
+        .login-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(212,175,55,0.3);
+        }
+
+        .back-link-login {
+            color: #777;
+            font-size: 13px;
+            margin-top: 14px;
+            cursor: pointer;
+            text-decoration: underline;
         }
 
         .login-error {
             color: #c0392b;
             font-size: 13px;
-            margin-top: 16px;
-            display: none;
+            margin-top: 12px;
+            max-width: 300px;
         }
+
+        .login-hint { color: #666; font-size: 13px; margin-bottom: 20px; }
 
         .app-content { display: none; }
 
@@ -331,8 +393,27 @@
     <div class="login-screen" id="loginScreen">
         <div class="hotel-name">The Mangal View</div>
         <h1>Staff Login</h1>
-        <button class="login-btn" onclick="doLogin()">Sign in with Google</button>
+
+        <!-- Step 1: Phone -->
+        <div id="stepPhone">
+            <div class="login-hint">Enter your mobile number</div>
+            <div class="phone-input-wrap">
+                <span class="phone-prefix">+91</span>
+                <input class="phone-input" id="phoneInput" type="tel" maxlength="10" placeholder="9XXXXXXXXX" inputmode="numeric">
+            </div>
+            <button class="login-btn" id="sendOtpBtn" onclick="sendOTP()">Send OTP</button>
+        </div>
+
+        <!-- Step 2: OTP -->
+        <div id="stepOTP" style="display:none;">
+            <div class="login-hint" id="otpHint">Enter the 6-digit OTP sent to your number</div>
+            <input class="otp-input" id="otpInput" type="tel" maxlength="6" placeholder="------" inputmode="numeric">
+            <button class="login-btn" id="verifyOtpBtn" onclick="verifyOTP()">Verify OTP</button>
+            <div class="back-link-login" onclick="backToPhone()">← Change number</div>
+        </div>
+
         <div class="login-error" id="loginError"></div>
+        <div id="recaptcha-container"></div>
     </div>
 
     <div class="app-content" id="appContent">
@@ -361,29 +442,100 @@
     </div><!-- /app-content -->
 
     <script>
-        const ALLOWED_EMAIL = 'themangalview@gmail.com';
+        let confirmationResult = null;
+        let recaptchaVerifier = null;
 
-        function doLogin() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            provider.setCustomParameters({ login_hint: ALLOWED_EMAIL });
-            firebase.auth().signInWithPopup(provider).catch(err => {
-                const el = document.getElementById('loginError');
-                el.textContent = err.message;
-                el.style.display = 'block';
-            });
+        function setError(msg) {
+            document.getElementById('loginError').textContent = msg;
         }
 
-        firebase.auth().onAuthStateChanged(user => {
-            if (user && user.email === ALLOWED_EMAIL) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('appContent').style.display = 'block';
-                initApp();
-            } else if (user) {
-                firebase.auth().signOut();
-                const el = document.getElementById('loginError');
-                el.textContent = 'Access denied. Staff accounts only.';
-                el.style.display = 'block';
+        function sendOTP() {
+            const raw = document.getElementById('phoneInput').value.trim();
+            if (raw.length !== 10 || !/^\d{10}$/.test(raw)) {
+                setError('Enter a valid 10-digit mobile number'); return;
             }
+            setError('');
+            const phone = '+91' + raw;
+            const btn = document.getElementById('sendOtpBtn');
+            btn.disabled = true;
+            btn.textContent = 'Sending…';
+
+            if (!recaptchaVerifier) {
+                recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    size: 'invisible', callback: () => {}
+                });
+            }
+
+            firebase.auth().signInWithPhoneNumber(phone, recaptchaVerifier)
+                .then(result => {
+                    confirmationResult = result;
+                    document.getElementById('stepPhone').style.display = 'none';
+                    document.getElementById('stepOTP').style.display = 'block';
+                    document.getElementById('otpHint').textContent = `OTP sent to +91 ${raw}`;
+                    document.getElementById('otpInput').focus();
+                })
+                .catch(err => {
+                    setError(err.code === 'auth/billing-not-enabled'
+                        ? 'SMS login is not enabled on this project yet. Contact admin.'
+                        : err.message);
+                    btn.disabled = false;
+                    btn.textContent = 'Send OTP';
+                    try { recaptchaVerifier.clear(); } catch (e) {}
+                    document.getElementById('recaptcha-container').innerHTML = '';
+                    recaptchaVerifier = null;
+                });
+        }
+
+        function verifyOTP() {
+            const otp = document.getElementById('otpInput').value.trim();
+            if (otp.length !== 6) { setError('Enter the 6-digit OTP'); return; }
+            if (!confirmationResult) { setError('Session expired.'); backToPhone(); return; }
+            setError('');
+            const btn = document.getElementById('verifyOtpBtn');
+            btn.disabled = true;
+            btn.textContent = 'Verifying…';
+            confirmationResult.confirm(otp)
+                .catch(err => {
+                    setError('Invalid OTP. Try again.');
+                    btn.disabled = false;
+                    btn.textContent = 'Verify OTP';
+                });
+        }
+
+        function backToPhone() {
+            document.getElementById('stepOTP').style.display = 'none';
+            document.getElementById('stepPhone').style.display = 'block';
+            document.getElementById('sendOtpBtn').disabled = false;
+            document.getElementById('sendOtpBtn').textContent = 'Send OTP';
+            document.getElementById('otpInput').value = '';
+            confirmationResult = null;
+            setError('');
+        }
+
+        document.getElementById('otpInput').addEventListener('input', function() {
+            if (this.value.length === 6) verifyOTP();
+        });
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) return;
+            // Check whitelist stored in Firebase (not in source)
+            database.ref('adminPhones/' + user.phoneNumber.replace('+', '')).once('value')
+                .then(snap => {
+                    if (snap.val() === true) {
+                        document.getElementById('loginScreen').style.display = 'none';
+                        document.getElementById('appContent').style.display = 'block';
+                        initApp();
+                    } else {
+                        firebase.auth().signOut();
+                        document.getElementById('stepPhone').style.display = 'none';
+                        document.getElementById('stepOTP').style.display = 'none';
+                        document.getElementById('loginError').innerHTML =
+                            '<div style="margin-top:32px;font-size:15px;color:#e0d5c5;line-height:1.7">' +
+                            'You do not have permission to login.<br>' +
+                            '<span style="color:#888;font-size:13px;">Contact The Mangal View Team</span>' +
+                            '</div>';
+                    }
+                });
         });
 
         function initApp() {
@@ -396,11 +548,11 @@
         let previousPendingKeys = new Set();
 
         // Sound — phone ring pattern
-        function ring() {
+        async function ring() {
             if (muted) return;
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
+                if (audioCtx.state === 'suspended') await audioCtx.resume();
 
                 const freqs = [440, 480];
                 freqs.forEach(freq => {
@@ -426,12 +578,15 @@
             } catch(e) {}
         }
 
+        function hasPendingToday() {
+            return Object.values(orders).some(o => o.status === 'pending' && isToday(o.timestamp));
+        }
+
         function startRinging() {
             stopRinging();
             ring();
             notificationInterval = setInterval(() => {
-                const hasPending = Object.values(orders).some(o => o.status === 'pending');
-                if (hasPending) {
+                if (hasPendingToday()) {
                     ring();
                     document.title = '🔔 NEW ORDER — TMV';
                 } else {
@@ -454,9 +609,10 @@
             btn.textContent = muted ? 'SOUND OFF' : 'SOUND ON';
             btn.classList.toggle('muted', muted);
             if (muted) stopRinging();
-            // Init audio context on user gesture
-            if (!muted && !audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            // Init / resume audio context on user gesture
+            if (!muted) {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
             }
         };
 
@@ -597,15 +753,21 @@
         // Actions — exposed globally for onclick
         window.acceptOrder = function(key) {
             database.ref(`orders/${key}/status`).set('accepted');
+            const room = orders[key] && orders[key].room;
+            if (room) database.ref(`roomOrders/${room}/${key}/status`).set('accepted');
         };
 
         window.markDone = function(key) {
             database.ref(`orders/${key}/status`).set('completed');
+            const room = orders[key] && orders[key].room;
+            if (room) database.ref(`roomOrders/${room}/${key}/status`).set('completed');
         };
 
         window.deleteOrder = function(key) {
             if (confirm('Delete this order?')) {
+                const room = orders[key] && orders[key].room;
                 database.ref(`orders/${key}`).remove();
+                if (room) database.ref(`roomOrders/${room}/${key}`).remove();
             }
         };
 
@@ -613,9 +775,9 @@
         database.ref('orders').on('value', (snapshot) => {
             const data = snapshot.val() || {};
 
-            // Detect truly new pending orders
+            // Detect truly new pending orders (today only — stale old orders must not ring)
             const newPendingKeys = new Set(
-                Object.keys(data).filter(k => data[k].status === 'pending')
+                Object.keys(data).filter(k => data[k].status === 'pending' && isToday(data[k].timestamp))
             );
             const hasNewPending = [...newPendingKeys].some(k => !previousPendingKeys.has(k));
 
@@ -627,9 +789,8 @@
                 if (!muted) startRinging();
             }
 
-            // Stop ringing if no pending
-            const hasPending = Object.values(orders).some(o => o.status === 'pending');
-            if (!hasPending) {
+            // Stop ringing if no pending (today)
+            if (!hasPendingToday()) {
                 stopRinging();
                 dismissBanner();
             }
